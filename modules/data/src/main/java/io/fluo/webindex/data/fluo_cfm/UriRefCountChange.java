@@ -4,26 +4,31 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import io.fluo.recipes.accumulo.export.AccumuloExporter;
 import io.fluo.webindex.core.Constants;
 import io.fluo.webindex.core.DataUtil;
+import io.fluo.webindex.data.recipes.Transmutable;
 import io.fluo.webindex.data.spark.IndexUtil;
 import io.fluo.webindex.data.util.LinkUtil;
 import org.apache.accumulo.core.data.Mutation;
 
-public class InlinksExporter extends AccumuloExporter<String, long[]> {
+public class UriRefCountChange implements Transmutable<String> {
+  public long prevCount = 0;
+  public long newCount = 0;
+
+  public UriRefCountChange(){}
+
+  public UriRefCountChange(long prevCount, long newCount){
+    this.prevCount = prevCount;
+    this.newCount = newCount;
+  }
 
   @Override
-  protected Collection<Mutation> convert(String uri, long seq, long[] value) {
-
+  public Collection<Mutation> toMutations(String uri, long seq) {
     ArrayList<Mutation> mutations = new ArrayList<>(4);
 
-    long prev = value[0];
-    long curr = value[1];
-
-    createTotalUpdates(mutations, uri, seq, prev, curr);
-    mutations.add(createDomainUpdate(uri, seq, prev, curr));
-    mutations.add(createPageUpdate(uri, seq, curr));
+    createTotalUpdates(mutations, uri, seq, prevCount, newCount);
+    mutations.add(createDomainUpdate(uri, seq, prevCount, newCount));
+    mutations.add(createPageUpdate(uri, seq, newCount));
 
     return mutations;
   }
@@ -50,7 +55,7 @@ public class InlinksExporter extends AccumuloExporter<String, long[]> {
   private static Mutation createPageUpdate(String uri, long seq, long curr) {
     Mutation m = new Mutation("p:"+uri);
     //TODO constants for column
-    m.put("page", "incount", ""+curr);
+    m.put("page", "incount", seq, ""+curr);
     return m;
   }
 
@@ -65,7 +70,7 @@ public class InlinksExporter extends AccumuloExporter<String, long[]> {
     mutations.add(m);
 
     m = new Mutation(createTotalRow(uri, curr));
-    m.put("", "", "");
+    m.put("", "", seq,  "");
     mutations.add(m);
   }
 }

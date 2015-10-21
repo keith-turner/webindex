@@ -33,6 +33,7 @@ import io.fluo.recipes.transaction.RecordingTransactionBase;
 import io.fluo.recipes.transaction.TxLog;
 import io.fluo.webindex.core.DataUtil;
 import io.fluo.webindex.core.models.Page;
+import io.fluo.webindex.data.fluo_cfm.UriMap.UriInfo;
 import io.fluo.webindex.data.util.FluoConstants;
 import io.fluo.webindex.data.util.LinkUtil;
 import org.slf4j.Logger;
@@ -44,14 +45,14 @@ public class PageObserver extends AbstractObserver {
   private static final Gson gson = new Gson();
   private ExportQueue<Bytes, TxLog> exportQueue;
 
-  private CollisionFreeMap<String, Long, Long> inLinkMap;
+  private CollisionFreeMap<String, UriInfo, UriInfo> uriMap;
 
   @Override
   public void init(Context context) throws Exception {
     //exportQueue = ExportQueue.getInstance(IndexExporter.QUEUE_ID, context.getAppConfiguration());
 
     //TODO constant
-    inLinkMap = CollisionFreeMap.getInstance("ilm", context.getAppConfiguration());
+    uriMap = CollisionFreeMap.getInstance(UriMap.URI_MAP_ID, context.getAppConfiguration());
   }
 
   @Override
@@ -72,12 +73,16 @@ public class PageObserver extends AbstractObserver {
       curLinks = curPage.getOutboundLinks();
     }
 
+    Map<String, UriInfo> updates = new HashMap<>();
+    String pageUri = row.toString().substring(2);
+
     if (curJson.isEmpty() && !nextJson.equals("delete")) {
       Long incount = ttx.get().row(row).col(FluoConstants.PAGE_INCOUNT_COL).toLong();
       if (incount == null) {
         ttx.mutate().row(row).col(FluoConstants.PAGE_INCOUNT_COL).set(new Long(0));
       }
-      updateDomainPageCount(ttx, row, 1);
+      //updateDomainPageCount(ttx, row, 1);
+      updates.put(pageUri, new UriInfo(0, 1));
     }
 
     Page nextPage;
@@ -85,7 +90,8 @@ public class PageObserver extends AbstractObserver {
       ttx.mutate().row(row).col(FluoConstants.PAGE_CUR_COL).delete();
       ttx.get().row(row).col(FluoConstants.PAGE_INCOUNT_COL).toLong(); // get for indexing
       ttx.mutate().row(row).col(FluoConstants.PAGE_INCOUNT_COL).delete();
-      updateDomainPageCount(ttx, row, -1);
+      //updateDomainPageCount(ttx, row, -1);
+      updates.put(pageUri, new UriInfo(0, -1));
       nextPage = Page.EMPTY;
     } else {
       ttx.mutate().row(row).col(FluoConstants.PAGE_CUR_COL).set(nextJson);
@@ -93,21 +99,18 @@ public class PageObserver extends AbstractObserver {
     }
 
     Set<Page.Link> nextLinks = nextPage.getOutboundLinks();
-    String pageUri = row.toString().substring(2);
-
-    Map<String, Long> updates = new HashMap<>();
 
     Sets.SetView<Page.Link> addLinks = Sets.difference(nextLinks, curLinks);
     for (Page.Link link : addLinks) {
-      updates.put(link.getUri(), 1L);
+      updates.put(link.getUri(), new UriInfo(1, 0));
     }
 
     Sets.SetView<Page.Link> delLinks = Sets.difference(curLinks, nextLinks);
     for (Page.Link link : delLinks) {
-      updates.put(link.getUri(), -1L);
+      updates.put(link.getUri(), new UriInfo(-1, 0));
     }
 
-    inLinkMap.update(tx, updates);
+    uriMap.update(tx, updates);
 
     // clean up
     ttx.mutate().row(row).col(FluoConstants.PAGE_NEW_COL).delete();

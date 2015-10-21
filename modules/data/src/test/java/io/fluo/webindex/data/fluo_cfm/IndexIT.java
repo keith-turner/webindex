@@ -40,10 +40,9 @@ import io.fluo.api.mini.MiniFluo;
 import io.fluo.recipes.accumulo.export.AccumuloExporter;
 import io.fluo.recipes.accumulo.export.TableInfo;
 import io.fluo.recipes.export.ExportQueue;
-import io.fluo.recipes.map.CollisionFreeMap;
-import io.fluo.recipes.map.CollisionFreeMap.Options;
 import io.fluo.webindex.core.Constants;
 import io.fluo.webindex.core.models.Page;
+import io.fluo.webindex.data.recipes.TransmutableExporter;
 import io.fluo.webindex.data.spark.IndexStats;
 import io.fluo.webindex.data.spark.IndexUtil;
 import io.fluo.webindex.data.util.ArchiveUtil;
@@ -130,10 +129,10 @@ public class IndexIT {
 
     config.addObserver(new ObserverConfiguration(PageObserver.class.getName()));
 
-    CollisionFreeMap.configure(config, new Options("ilm", IniinkCombiner.class, InlinkUpdateObserver.class, String.class, Long.class, Long.class, 5));
+    UriMap.configure(config, 5);
 
     ExportQueue.configure(config, new ExportQueue.Options("ileq",
-        InlinksExporter.class, String.class, long[].class, 5));
+        TransmutableExporter.class, String.class, UriRefCountChange.class, 5));
 
     AccumuloExporter.setExportTableInfo(config.getAppConfiguration(), "ileq", new TableInfo(
         cluster.getInstanceName(), cluster.getZooKeepers(), "root", "secret", exportTable));
@@ -187,6 +186,15 @@ public class IndexIT {
     Assert.assertFalse(foundDiff);
   }
 
+  //TODO remove
+  private void printSpark(Collection<Page> pages){
+    JavaRDD<Page> pagesRDD = sc.parallelize(new ArrayList<>(pages));
+    IndexStats stats = new IndexStats(sc);
+    JavaPairRDD<RowColumn, Bytes> accumuloIndex = IndexUtil.createAccumuloIndex(stats, pagesRDD);
+
+    printRDD(accumuloIndex.collect());
+  }
+
   @Test
   public void testIndexing() throws Exception {
 
@@ -203,6 +211,8 @@ public class IndexIT {
       miniFluo.waitForObservers();
 
       printAccumuloTable();
+      printSpark(pages.values());
+
     }
   }
 
