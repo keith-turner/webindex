@@ -11,13 +11,13 @@ import io.fluo.webindex.data.spark.IndexUtil;
 import io.fluo.webindex.data.util.LinkUtil;
 import org.apache.accumulo.core.data.Mutation;
 
-public class UriRefCountChange implements Transmutable<String> {
+public class UriCountExport implements Transmutable<String> {
   public long prevCount = 0;
   public long newCount = 0;
 
-  public UriRefCountChange(){}
+  public UriCountExport(){}
 
-  public UriRefCountChange(long prevCount, long newCount){
+  public UriCountExport(long prevCount, long newCount){
     this.prevCount = prevCount;
     this.newCount = newCount;
   }
@@ -45,9 +45,12 @@ public class UriRefCountChange implements Transmutable<String> {
 
   private static Mutation createDomainUpdate(String uri, long seq, long prev, long curr) {
     Mutation m = new Mutation(getDomainRow(uri));
-    String cf = String.format("%s:%s", IndexUtil.revEncodeLong(prev), uri);
-    m.putDelete(Constants.RANK.getBytes(), cf.getBytes(), seq);
-    cf = String.format("%s:%s", IndexUtil.revEncodeLong(curr), uri);
+    //TODO screwy case when it does not exists... prev is 0 and initial val could be 0
+    if(prev != curr) {
+      String cf = String.format("%s:%s", IndexUtil.revEncodeLong(prev), uri);
+      m.putDelete(Constants.RANK.getBytes(), cf.getBytes(), seq);
+    }
+    String cf = String.format("%s:%s", IndexUtil.revEncodeLong(curr), uri);
     m.put(Constants.RANK.getBytes(), cf.getBytes(), seq, (""+curr).getBytes());
     return m;
   }
@@ -65,9 +68,14 @@ public class UriRefCountChange implements Transmutable<String> {
 
   private static void createTotalUpdates(ArrayList<Mutation> mutations, String uri, long seq, long prev,
       long curr) {
-    Mutation m = new Mutation(createTotalRow(uri, prev));
-    m.putDelete("", "", seq);
-    mutations.add(m);
+    Mutation m;
+
+    //TODO screwy case when it does not exists... prev is 0 and initial val could be 0
+    if(prev != curr) {
+      m = new Mutation(createTotalRow(uri, prev));
+      m.putDelete("", "", seq);
+      mutations.add(m);
+    }
 
     m = new Mutation(createTotalRow(uri, curr));
     m.put("", "", seq,  "");

@@ -42,6 +42,7 @@ import io.fluo.recipes.accumulo.export.TableInfo;
 import io.fluo.recipes.export.ExportQueue;
 import io.fluo.webindex.core.Constants;
 import io.fluo.webindex.core.models.Page;
+import io.fluo.webindex.data.recipes.Transmutable;
 import io.fluo.webindex.data.recipes.TransmutableExporter;
 import io.fluo.webindex.data.spark.IndexStats;
 import io.fluo.webindex.data.spark.IndexUtil;
@@ -130,9 +131,10 @@ public class IndexIT {
     config.addObserver(new ObserverConfiguration(PageObserver.class.getName()));
 
     UriMap.configure(config, 5);
+    DomainMap.configure(config, 5);
 
     ExportQueue.configure(config, new ExportQueue.Options("ileq",
-        TransmutableExporter.class, String.class, UriRefCountChange.class, 5));
+        TransmutableExporter.class.getName(), String.class.getName(), Transmutable.class.getName(), 5));
 
     AccumuloExporter.setExportTableInfo(config.getAppConfiguration(), "ileq", new TableInfo(
         cluster.getInstanceName(), cluster.getZooKeepers(), "root", "secret", exportTable));
