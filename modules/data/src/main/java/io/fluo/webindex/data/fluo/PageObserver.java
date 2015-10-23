@@ -85,6 +85,8 @@ public class PageObserver extends AbstractObserver {
       nextPage = gson.fromJson(nextJson, Page.class);
     }
 
+    //TODO shorten above code
+
     Set<Page.Link> nextLinks = nextPage.getOutboundLinks();
 
     Sets.SetView<Page.Link> addLinks = Sets.difference(nextLinks, curLinks);
