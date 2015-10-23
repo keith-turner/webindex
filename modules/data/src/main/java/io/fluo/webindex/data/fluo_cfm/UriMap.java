@@ -102,6 +102,7 @@ public class UriMap {
 
     private String getDomain(String uri) {
       try {
+        //TODO does this need to throw exception????????
         return LinkUtil.getReverseTopPrivate(DataUtil.toUrl(uri));
       } catch (ParseException e) {
         throw new RuntimeException(e);

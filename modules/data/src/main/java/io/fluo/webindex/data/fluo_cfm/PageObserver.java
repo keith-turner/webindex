@@ -34,6 +34,7 @@ import io.fluo.recipes.transaction.TxLog;
 import io.fluo.webindex.core.DataUtil;
 import io.fluo.webindex.core.models.Page;
 import io.fluo.webindex.data.fluo_cfm.UriMap.UriInfo;
+import io.fluo.webindex.data.recipes.Transmutable;
 import io.fluo.webindex.data.util.FluoConstants;
 import io.fluo.webindex.data.util.LinkUtil;
 import org.slf4j.Logger;
@@ -46,12 +47,14 @@ public class PageObserver extends AbstractObserver {
   private ExportQueue<Bytes, TxLog> exportQueue;
 
   private CollisionFreeMap<String, UriInfo, UriInfo> uriMap;
+  private ExportQueue<String, Transmutable<String>> exportQ;
 
   @Override
   public void init(Context context) throws Exception {
     //exportQueue = ExportQueue.getInstance(IndexExporter.QUEUE_ID, context.getAppConfiguration());
 
     //TODO constant
+    exportQ = ExportQueue.getInstance("ileq", context.getAppConfiguration());
     uriMap = CollisionFreeMap.getInstance(UriMap.URI_MAP_ID, context.getAppConfiguration());
   }
 
@@ -112,8 +115,12 @@ public class PageObserver extends AbstractObserver {
 
     uriMap.update(tx, updates);
 
+    exportQ.add(tx, pageUri, new PageExport(nextJson, addLinks, delLinks));
+
     // clean up
     ttx.mutate().row(row).col(FluoConstants.PAGE_NEW_COL).delete();
+
+
 
     TxLog txLog = rtx.getTxLog();
     if (!txLog.isEmpty()) {
