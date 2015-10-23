@@ -1,3 +1,17 @@
+/*
+ * Copyright 2015 Fluo authors (see AUTHORS)
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package io.fluo.webindex.data.fluo_cfm;
 
 import java.text.ParseException;
@@ -15,9 +29,9 @@ public class UriCountExport implements Transmutable<String> {
   public long prevCount = 0;
   public long newCount = 0;
 
-  public UriCountExport(){}
+  public UriCountExport() {}
 
-  public UriCountExport(long prevCount, long newCount){
+  public UriCountExport(long prevCount, long newCount) {
     this.prevCount = prevCount;
     this.newCount = newCount;
   }
@@ -45,20 +59,20 @@ public class UriCountExport implements Transmutable<String> {
 
   private static Mutation createDomainUpdate(String uri, long seq, long prev, long curr) {
     Mutation m = new Mutation(getDomainRow(uri));
-    //TODO screwy case when it does not exists... prev is 0 and initial val could be 0
-    if(prev != curr) {
+    // TODO screwy case when it does not exists... prev is 0 and initial val could be 0
+    if (prev != curr) {
       String cf = String.format("%s:%s", IndexUtil.revEncodeLong(prev), uri);
       m.putDelete(Constants.RANK.getBytes(), cf.getBytes(), seq);
     }
     String cf = String.format("%s:%s", IndexUtil.revEncodeLong(curr), uri);
-    m.put(Constants.RANK.getBytes(), cf.getBytes(), seq, (""+curr).getBytes());
+    m.put(Constants.RANK.getBytes(), cf.getBytes(), seq, ("" + curr).getBytes());
     return m;
   }
 
   private static Mutation createPageUpdate(String uri, long seq, long curr) {
-    Mutation m = new Mutation("p:"+uri);
-    //TODO constants for column
-    m.put("page", "incount", seq, ""+curr);
+    Mutation m = new Mutation("p:" + uri);
+    // TODO constants for column
+    m.put("page", "incount", seq, "" + curr);
     return m;
   }
 
@@ -66,19 +80,19 @@ public class UriCountExport implements Transmutable<String> {
     return String.format("t:%s:%s", IndexUtil.revEncodeLong(curr), uri);
   }
 
-  private static void createTotalUpdates(ArrayList<Mutation> mutations, String uri, long seq, long prev,
-      long curr) {
+  private static void createTotalUpdates(ArrayList<Mutation> mutations, String uri, long seq,
+      long prev, long curr) {
     Mutation m;
 
-    //TODO screwy case when it does not exists... prev is 0 and initial val could be 0
-    if(prev != curr) {
+    // TODO screwy case when it does not exists... prev is 0 and initial val could be 0
+    if (prev != curr) {
       m = new Mutation(createTotalRow(uri, prev));
       m.putDelete("", "", seq);
       mutations.add(m);
     }
 
     m = new Mutation(createTotalRow(uri, curr));
-    m.put("", "", seq,  "");
+    m.put("", "", seq, "");
     mutations.add(m);
   }
 }

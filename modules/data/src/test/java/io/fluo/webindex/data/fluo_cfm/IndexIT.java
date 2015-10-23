@@ -1,11 +1,11 @@
 /*
  * Copyright 2015 Fluo authors (see AUTHORS)
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -133,11 +133,14 @@ public class IndexIT {
     UriMap.configure(config, 5);
     DomainMap.configure(config, 5);
 
-    ExportQueue.configure(config, new ExportQueue.Options("ileq",
-        TransmutableExporter.class.getName(), String.class.getName(), Transmutable.class.getName(), 5));
+    ExportQueue.configure(
+        config,
+        new ExportQueue.Options("ileq", TransmutableExporter.class.getName(), String.class
+            .getName(), Transmutable.class.getName(), 5));
 
-    AccumuloExporter.setExportTableInfo(config.getAppConfiguration(), "ileq", new TableInfo(
-        cluster.getInstanceName(), cluster.getZooKeepers(), "root", "secret", exportTable));
+    AccumuloExporter.setExportTableInfo(config.getAppConfiguration(), "ileq",
+        new TableInfo(cluster.getInstanceName(), cluster.getZooKeepers(), "root", "secret",
+            exportTable));
 
     FluoFactory.newAdmin(config).initialize(
         new FluoAdmin.InitOpts().setClearTable(true).setClearZookeeper(true));
@@ -188,8 +191,8 @@ public class IndexIT {
     Assert.assertFalse(foundDiff);
   }
 
-  //TODO remove
-  private void printSpark(Collection<Page> pages){
+  // TODO remove
+  private void printSpark(Collection<Page> pages) {
     JavaRDD<Page> pagesRDD = sc.parallelize(new ArrayList<>(pages));
     IndexStats stats = new IndexStats(sc);
     JavaPairRDD<RowColumn, Bytes> accumuloIndex = IndexUtil.createAccumuloIndex(stats, pagesRDD);

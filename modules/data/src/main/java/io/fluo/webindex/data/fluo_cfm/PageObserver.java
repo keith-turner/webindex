@@ -1,11 +1,11 @@
 /*
  * Copyright 2015 Fluo authors (see AUTHORS)
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -51,9 +51,9 @@ public class PageObserver extends AbstractObserver {
 
   @Override
   public void init(Context context) throws Exception {
-    //exportQueue = ExportQueue.getInstance(IndexExporter.QUEUE_ID, context.getAppConfiguration());
+    // exportQueue = ExportQueue.getInstance(IndexExporter.QUEUE_ID, context.getAppConfiguration());
 
-    //TODO constant
+    // TODO constant
     exportQ = ExportQueue.getInstance("ileq", context.getAppConfiguration());
     uriMap = CollisionFreeMap.getInstance(UriMap.URI_MAP_ID, context.getAppConfiguration());
   }
@@ -84,7 +84,7 @@ public class PageObserver extends AbstractObserver {
       if (incount == null) {
         ttx.mutate().row(row).col(FluoConstants.PAGE_INCOUNT_COL).set(new Long(0));
       }
-      //updateDomainPageCount(ttx, row, 1);
+      // updateDomainPageCount(ttx, row, 1);
       updates.put(pageUri, new UriInfo(0, 1));
     }
 
@@ -93,7 +93,7 @@ public class PageObserver extends AbstractObserver {
       ttx.mutate().row(row).col(FluoConstants.PAGE_CUR_COL).delete();
       ttx.get().row(row).col(FluoConstants.PAGE_INCOUNT_COL).toLong(); // get for indexing
       ttx.mutate().row(row).col(FluoConstants.PAGE_INCOUNT_COL).delete();
-      //updateDomainPageCount(ttx, row, -1);
+      // updateDomainPageCount(ttx, row, -1);
       updates.put(pageUri, new UriInfo(0, -1));
       nextPage = Page.EMPTY;
     } else {
@@ -124,7 +124,7 @@ public class PageObserver extends AbstractObserver {
 
     TxLog txLog = rtx.getTxLog();
     if (!txLog.isEmpty()) {
-      //exportQueue.add(tx, row, txLog);
+      // exportQueue.add(tx, row, txLog);
     }
   }
 

@@ -1,3 +1,17 @@
+/*
+ * Copyright 2015 Fluo authors (see AUTHORS)
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package io.fluo.webindex.data.fluo_cfm;
 
 import java.util.Collection;
@@ -45,7 +59,7 @@ public class DomainMap {
 
     @Override
     public void init(String mapId, Context observerContext) throws Exception {
-      //TODO constant
+      // TODO constant
       exportQ = ExportQueue.getInstance("ileq", observerContext.getAppConfiguration());
     }
 
@@ -61,17 +75,17 @@ public class DomainMap {
   public static class DomainExport implements Transmutable<String> {
     private long count;
 
-    public DomainExport(){}
+    public DomainExport() {}
 
-    public DomainExport(long c){
+    public DomainExport(long c) {
       this.count = c;
     }
 
     @Override
     public Collection<Mutation> toMutations(String domain, long seq) {
-      Mutation m = new Mutation("d:"+domain);
-      //TODO literals
-      m.put("domain", "pagecount", count+"");
+      Mutation m = new Mutation("d:" + domain);
+      // TODO literals
+      m.put("domain", "pagecount", count + "");
       return Collections.singleton(m);
     }
   }
@@ -80,6 +94,7 @@ public class DomainMap {
    * A helper method for configuring the uri map before initializing Fluo.
    */
   public static void configure(FluoConfiguration config, int numBuckets) {
-    CollisionFreeMap.configure(config, new Options(DOMAIN_MAP_ID, DomainCombiner.class, DomainUpdateObserver.class, String.class, Long.class, Long.class, numBuckets));
+    CollisionFreeMap.configure(config, new Options(DOMAIN_MAP_ID, DomainCombiner.class,
+        DomainUpdateObserver.class, String.class, Long.class, Long.class, numBuckets));
   }
 }

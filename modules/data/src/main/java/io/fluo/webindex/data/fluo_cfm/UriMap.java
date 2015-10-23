@@ -1,3 +1,17 @@
+/*
+ * Copyright 2015 Fluo authors (see AUTHORS)
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
 package io.fluo.webindex.data.fluo_cfm;
 
 import java.text.ParseException;
@@ -20,20 +34,21 @@ import io.fluo.webindex.data.recipes.Transmutable;
 import io.fluo.webindex.data.util.LinkUtil;
 
 /**
- * This class contains code related to a CollisionFreeMap that keeps track of the count of information about URIs.
+ * This class contains code related to a CollisionFreeMap that keeps track of the count of
+ * information about URIs.
  */
 public class UriMap {
 
   public static String URI_MAP_ID = "um";
 
   public static class UriInfo {
-    //the numbers of documents that link to this URI
+    // the numbers of documents that link to this URI
     long linksTo;
 
-    //the number of documents with this URI.  Should be 0 or 1
+    // the number of documents with this URI. Should be 0 or 1
     int docs;
 
-    public UriInfo(){}
+    public UriInfo() {}
 
     public UriInfo(long linksTo, int docs) {
       this.linksTo = linksTo;
@@ -60,7 +75,7 @@ public class UriMap {
         total.add(updates.next());
       }
 
-      //TODO when both 0, return null
+      // TODO when both 0, return null
       return total;
     }
   }
@@ -75,9 +90,11 @@ public class UriMap {
 
     @Override
     public void init(String mapId, Context observerContext) throws Exception {
-      //TODO constant
+      // TODO constant
       exportQ = ExportQueue.getInstance("ileq", observerContext.getAppConfiguration());
-      domainMap = CollisionFreeMap.getInstance(DomainMap.DOMAIN_MAP_ID, observerContext.getAppConfiguration());
+      domainMap =
+          CollisionFreeMap.getInstance(DomainMap.DOMAIN_MAP_ID,
+              observerContext.getAppConfiguration());
     }
 
     @Override
@@ -90,11 +107,12 @@ public class UriMap {
         UriInfo oldVal = update.getOldValue().or(new UriInfo(0, 0));
         UriInfo newVal = update.getNewValue().or(new UriInfo(0, 0));
 
-        System.out.println("adding export "+update.getKey()+" "+oldVal.linksTo+" "+newVal.linksTo);
+        System.out.println("adding export " + update.getKey() + " " + oldVal.linksTo + " "
+            + newVal.linksTo);
         exportQ.add(tx, update.getKey(), new UriCountExport(oldVal.linksTo, newVal.linksTo));
 
         String pageDomain = getDomain(update.getKey());
-        domainUpdates.merge(pageDomain, newVal.linksTo + newVal.docs, (o,n) -> o+n);
+        domainUpdates.merge(pageDomain, newVal.linksTo + newVal.docs, (o, n) -> o + n);
       }
 
       domainMap.update(tx, domainUpdates);
@@ -102,7 +120,7 @@ public class UriMap {
 
     private String getDomain(String uri) {
       try {
-        //TODO does this need to throw exception????????
+        // TODO does this need to throw exception????????
         return LinkUtil.getReverseTopPrivate(DataUtil.toUrl(uri));
       } catch (ParseException e) {
         throw new RuntimeException(e);
@@ -114,6 +132,7 @@ public class UriMap {
    * A helper method for configuring the uri map before initializing Fluo.
    */
   public static void configure(FluoConfiguration config, int numBuckets) {
-    CollisionFreeMap.configure(config, new Options(URI_MAP_ID, UriCombiner.class, UriUpdateObserver.class, String.class, UriInfo.class, UriInfo.class, numBuckets));
+    CollisionFreeMap.configure(config, new Options(URI_MAP_ID, UriCombiner.class,
+        UriUpdateObserver.class, String.class, UriInfo.class, UriInfo.class, numBuckets));
   }
 }
