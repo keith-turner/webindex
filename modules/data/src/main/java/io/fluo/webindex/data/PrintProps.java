@@ -19,14 +19,15 @@ import java.util.Iterator;
 
 import io.fluo.api.config.FluoConfiguration;
 import io.fluo.api.config.ObserverConfiguration;
-import io.fluo.api.data.Bytes;
+import io.fluo.recipes.accumulo.export.AccumuloExporter;
 import io.fluo.recipes.accumulo.export.TableInfo;
 import io.fluo.recipes.export.ExportQueue;
-import io.fluo.recipes.transaction.TxLog;
 import io.fluo.webindex.core.DataConfig;
-import io.fluo.webindex.data.fluo.IndexExporter;
-import io.fluo.webindex.data.fluo.InlinksObserver;
+import io.fluo.webindex.data.fluo.DomainMap;
 import io.fluo.webindex.data.fluo.PageObserver;
+import io.fluo.webindex.data.fluo.UriMap;
+import io.fluo.webindex.data.recipes.Transmutable;
+import io.fluo.webindex.data.recipes.TransmutableExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,13 +39,16 @@ public class PrintProps {
       int numExportBuckets) {
 
     appConfig.addObserver(new ObserverConfiguration(PageObserver.class.getName()));
-    appConfig.addObserver(new ObserverConfiguration(InlinksObserver.class.getName()));
 
-    ExportQueue.configure(appConfig, new ExportQueue.Options(IndexExporter.QUEUE_ID,
-        IndexExporter.class, Bytes.class, TxLog.class, numExportBuckets));
+    UriMap.configure(appConfig, numExportBuckets);
+    DomainMap.configure(appConfig, numExportBuckets);
 
-    IndexExporter.setExportTableInfo(appConfig.getAppConfiguration(), IndexExporter.QUEUE_ID,
-        exportTable);
+    ExportQueue.configure(
+        appConfig,
+        new ExportQueue.Options("ileq", TransmutableExporter.class.getName(), String.class
+            .getName(), Transmutable.class.getName(), 5));
+
+    AccumuloExporter.setExportTableInfo(appConfig.getAppConfiguration(), "ileq", exportTable);
   }
 
   public static void main(String[] args) {

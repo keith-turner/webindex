@@ -12,7 +12,7 @@
  * the License.
  */
 
-package io.fluo.webindex.data.fluo_cfm;
+package io.fluo.webindex.data.fluo;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +28,7 @@ import io.fluo.recipes.map.CollisionFreeMap.Options;
 import io.fluo.recipes.map.Combiner;
 import io.fluo.recipes.map.Update;
 import io.fluo.recipes.map.UpdateObserver;
+import io.fluo.webindex.core.Constants;
 import io.fluo.webindex.data.recipes.Transmutable;
 import org.apache.accumulo.core.data.Mutation;
 
@@ -84,8 +85,11 @@ public class DomainMap {
     @Override
     public Collection<Mutation> toMutations(String domain, long seq) {
       Mutation m = new Mutation("d:" + domain);
-      // TODO literals
-      m.put("domain", "pagecount", count + "");
+      if (count == 0) {
+        m.putDelete(Constants.DOMAIN, Constants.PAGECOUNT, seq);
+      } else {
+        m.put(Constants.DOMAIN, Constants.PAGECOUNT, seq, count + "");
+      }
       return Collections.singleton(m);
     }
   }

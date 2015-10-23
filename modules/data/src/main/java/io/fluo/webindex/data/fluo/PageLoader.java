@@ -12,7 +12,7 @@
  * the License.
  */
 
-package io.fluo.webindex.data.fluo_cfm;
+package io.fluo.webindex.data.fluo;
 
 import java.net.MalformedURLException;
 

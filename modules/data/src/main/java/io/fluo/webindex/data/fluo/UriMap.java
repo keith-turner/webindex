@@ -12,7 +12,7 @@
  * the License.
  */
 
-package io.fluo.webindex.data.fluo_cfm;
+package io.fluo.webindex.data.fluo;
 
 import java.text.ParseException;
 import java.util.HashMap;
@@ -60,6 +60,20 @@ public class UriMap {
       this.docs += other.docs;
     }
 
+    @Override
+    public String toString() {
+      return linksTo + " " + docs;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof UriInfo) {
+        UriInfo oui = (UriInfo) o;
+        return linksTo == oui.linksTo && docs == oui.docs;
+      }
+
+      return false;
+    }
   }
 
   /**
@@ -107,12 +121,11 @@ public class UriMap {
         UriInfo oldVal = update.getOldValue().or(new UriInfo(0, 0));
         UriInfo newVal = update.getNewValue().or(new UriInfo(0, 0));
 
-        System.out.println("adding export " + update.getKey() + " " + oldVal.linksTo + " "
-            + newVal.linksTo);
-        exportQ.add(tx, update.getKey(), new UriCountExport(oldVal.linksTo, newVal.linksTo));
+        exportQ.add(tx, update.getKey(), new UriCountExport(oldVal, newVal));
 
         String pageDomain = getDomain(update.getKey());
-        domainUpdates.merge(pageDomain, newVal.linksTo + newVal.docs, (o, n) -> o + n);
+        long domainDelta = (newVal.linksTo + newVal.docs) - (oldVal.linksTo + oldVal.docs);
+        domainUpdates.merge(pageDomain, domainDelta, (o, n) -> o + n);
       }
 
       domainMap.update(tx, domainUpdates);
