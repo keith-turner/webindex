@@ -47,7 +47,7 @@ counts to the Domain Map and URI Exporter.
 
 For each URI, the Query table contains the URIs that reference it.  This export
 code keeps that information in the Query table up to date.  One interesting
-Fluo concept this highlight is the concept of inversion on export.  The
+concept this code uses is the concept of inversion on export.  The
 complete inverted URI index is never built in Fluo, its only built in Query
 table.
 
