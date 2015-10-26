@@ -18,6 +18,11 @@ https://docs.google.com/drawings/d/1vl26uXtScXn1ssj3WEb-qskuH-15OOmWul1B562oWDc/
 -->
 
 ### Page Loader
+
+This loader queues updated page content for processing by the page observer.
+
+**Code:** [PageLoader.java][PageLoader]
+
 ### Page Observer
 
 This observer computes changes to links within a page by comparing new and
@@ -82,6 +87,7 @@ Export changes to the number of URIs referencing a domain to the Query table.
 
 **Code:** [DomainExport.java][DomainExport]
 
+[PageLoader]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageLoader.java
 [PageObserver]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageObserver.java
 [UriMap]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriMap.java
 [DomainMap]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/DomainMap.java
