@@ -20,7 +20,7 @@ following table shows the possible columns for domain rows.
 | Family  | Qualifier                 | Timestamp      | Value             | Description 
 |---------|---------------------------|----------------|-------------------|-------------
 | domain  | pagecount                 | \<export seq\> | \<num pages\>     | Count of the number of rank columns in the row
-| rank    | \<uri ref count\>:\<uri\> | \<export seq\> | \<uri ref count\> | Count of how many times a URI in the domain is referenced.  The count is encoded in the qualifier so that the URI with the most references sorts first.
+| rank    | \<uri-ref-count\>:\<uri\> | \<export-seq\> | \<uri-ref-count\> | Count of how many times a URI in the domain is referenced.  The count is encoded in the qualifier so that the URI with the most references sorts first.
 
 ## Page Row range
 
