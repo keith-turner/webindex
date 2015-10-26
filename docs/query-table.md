@@ -1,0 +1,5 @@
+# Webindex Query Table Schema
+
+
+
+
