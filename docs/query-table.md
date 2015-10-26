@@ -20,7 +20,7 @@ following table shows the possible columns for domain rows.
 | Family  | Qualifier             | Timestamp    | Value           | 
 |---------|-----------------------|--------------|-----------------|
 | `domain`  | `pagecount`             | `<export seq>` | `<num pages>`     |
-| `rank`    | `<uri ref count>:<uri>` | `<export seq>` | `<uri ref count>` |
+| rank    | \<uri ref count\>:\<uri\> | \<export seq\> | \<uri ref count\> |
 
 ## Page Row range
 
