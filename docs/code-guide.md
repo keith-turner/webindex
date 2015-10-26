@@ -1,4 +1,4 @@
 
 
-![Observer Map](webindex_graphic.png)
+<center>![Observer Map](webindex_graphic.png)</center>
 
