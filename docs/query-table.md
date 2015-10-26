@@ -17,9 +17,9 @@ To answer these questions the query table has three top level row ranges :
 In the domain section of the table all rows are of the form `d:<domain>`.  The
 following table shows the possible columns for domain rows.
 
-| Family  | Qualifier             | Timestamp    | Value           | 
-|---------|-----------------------|--------------|-----------------|
-| `domain`  | `pagecount`             | `<export seq>` | `<num pages>`     |
+| Family  | Qualifier                 | Timestamp      | Value             | 
+|---------|---------------------------|----------------|-------------------|
+| domain  | pagecount                 | \<export seq\> | \<num pages\>     |
 | rank    | \<uri ref count\>:\<uri\> | \<export seq\> | \<uri ref count\> |
 
 ## Page Row range
@@ -27,10 +27,10 @@ following table shows the possible columns for domain rows.
 In the page section of the table all rows are of the form `p:<uri>`.  The
 following table shows the possible columns for page rows.
 
-| Family  | Qualifier         | Timestamp    | Value       | 
-|---------|-------------------|--------------|-------------|
-| `page`    | `cur`               | `<export seq>` | `<pages outlinks json>` |
-| `page`    | `incount`           | `<export seq>` | `<uri ref count>` |
-| `inlinks` | `<uri>`             | `<export seq>` | `<anchor text>` |
+| Family  | Qualifier         | Timestamp      | Value                   | 
+|---------|-------------------|----------------|-------------------------|
+| page    | cur               | \<export seq\> | \<pages outlinks json\> |
+| page    | incount           | \<export seq\> | \<uri ref count\>       |
+| inlinks | \<uri\>           | \<export seq\> | \<anchor text\>         |
 
 
