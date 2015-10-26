@@ -78,10 +78,14 @@ information needed to keep the three indexes current.
 
 ### Domain Exporter
 
+Export changes to the number of URIs referencing a domain to the Query table.
+
+**Code:** [DomainExport.java][DomainExport]
 
 [PageObserver]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageObserver.java
 [UriMap]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriMap.java
 [DomainMap]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/DomainMap.java
 [UriCountExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriCountExport.java
 [PageExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageExport.java
+[DomainExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/DomainExport.java
 
