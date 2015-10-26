@@ -21,26 +21,42 @@ https://docs.google.com/drawings/d/1vl26uXtScXn1ssj3WEb-qskuH-15OOmWul1B562oWDc/
 ### Page Observer
 
 This observer computes the changes to links within a page.  It computes the
-links added and deleted and then push this information to the URI Map Observer
-and Page Exporter.
+links added and deleted and then pushes this information to the URI Map
+Observer and Page Exporter.
+
+Conceptually when a page references a new URI, a `+1` is queued up for the Uri
+Map.  When a page no longer references a URI, a `-1` is queued up for the Uri
+Map to process.
 
 **Code:** [PageObserver.java][PageObserver]
 
 ### URI Map Observer
 
-The code this this observer is very simple because it builds on the Collision
-Free Map Recipe.  The observer responds to an update in the number of URIs that
-refererence a URI.  It pushes these changes in reference counts to the Domain
-Map and URI Exporter.
+The code for this this observer is very simple because it builds on the
+Collision Free Map Recipe.  A Collision Free Map has two extension points and
+this example implements both.   The first extension point is a
+combiner that processes the `+1` and `-1` updates queued up by the Page
+Observer.   The second extension point is an update observer the handles
+changes in reference counts for a URI.  It pushes these changes in reference
+counts to the Domain Map and URI Exporter.
 
 **Code:** [UriMap.java][UriMap]
 
 ### Domain Map Observer
 ### Page Exporter
 ### URI Exporter
+
+Previous observers calculated the total number of URIs that reference a URI.
+This export code is given the new and old URI reference counts.  URI reference
+counts are indexed three different ways in the Query table.  This export code
+updates all three places in the Query table.
+
+**Code:** [UriCountExport.java][UriCountExport]
+
 ### Domain Exporter
 
 
 [PageObserver]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageObserver.java
 [UriMap]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriMap.java
+[UriCountExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriCountExport.java
 
