@@ -19,8 +19,8 @@ following table shows the possible columns for domain rows.
 
 | Family  | Qualifier             | Timestamp    | Value           | 
 |---------|-----------------------|--------------|-----------------|
-| domain  | pagecount             | <export seq> | <num pages>     |
-| rank    | <uri ref count>:<uri> | <export seq> | <uri ref count> |
+| `domain`  | `pagecount`             | `<export seq>` | `<num pages>`     |
+| `rank`    | `<uri ref count>:<uri>` | `<export seq>` | `<uri ref count>` |
 
 ## Page Row range
 
@@ -29,8 +29,8 @@ following table shows the possible columns for page rows.
 
 | Family  | Qualifier         | Timestamp    | Value       | 
 |---------|-------------------|--------------|-------------|
-| page    | cur               | <export seq> | <pages outlinks json> |
-| page    | incount           | <export seq> | <uri ref count> |
-| inlinks | <uri>             | <export seq> | <anchor text> |
+| `page`    | `cur`               | `<export seq>` | `<pages outlinks json>` |
+| `page`    | `incount`           | `<export seq>` | `<uri ref count>` |
+| `inlinks` | `<uri>`             | `<export seq>` | `<anchor text>` |
 
 
