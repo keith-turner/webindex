@@ -19,10 +19,17 @@ https://docs.google.com/drawings/d/1vl26uXtScXn1ssj3WEb-qskuH-15OOmWul1B562oWDc/
 
 ### Page Loader
 ### Page Observer
+
+This observer computes the changes to links within a page.  Specifically it computes the links added and deleted and then initiates follow on processing.   
+
+**Code:** [PageObserver.java][PageObserver]
+
 ### URI Map Observer
 ### Domain Map Observer
 ### Page Export
 ### URI Export
 ### Domain Export
 
+
+[PageObserver]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageObserver.java
 
