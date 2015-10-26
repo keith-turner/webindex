@@ -3,9 +3,12 @@
 
 The Webindex example has three major code components.
 
- * Spark component :  Generates initial Fluo and Query tables.
- * Fluo component :  Updates the Query table as web pages are added, removed, and updated.
- * Web component : Web application that uses the Query table. 
+ * Spark component :  Generates initial Fluo and [Query table][qt].
+ * Fluo component :  Updates the [Query table][qt] as web pages are added, removed, and updated.
+ * Web component : Web application that uses the [Query table][qt]. 
+
+Since all of these components either read or write the Query table, you may
+want to read about the [Query Table][qt] before reading about the code.
 
 ## Guide to Fluo Component.
 
@@ -94,4 +97,5 @@ Export changes to the number of URIs referencing a domain to the Query table.
 [UriCountExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriCountExport.java
 [PageExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageExport.java
 [DomainExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/DomainExport.java
+[qt]: query-table.md
 
