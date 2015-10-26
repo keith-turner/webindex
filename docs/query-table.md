@@ -17,10 +17,10 @@ To answer these questions the query table has three top level row ranges :
 In the domain section of the table all rows are of the form `d:<domain>`.  The
 following table shows the possible columns for domain rows.
 
-| Family  | Qualifier                 | Timestamp      | Value             | 
-|---------|---------------------------|----------------|-------------------|
-| domain  | pagecount                 | \<export seq\> | \<num pages\>     |
-| rank    | \<uri ref count\>:\<uri\> | \<export seq\> | \<uri ref count\> |
+| Family  | Qualifier                 | Timestamp      | Value             | Description 
+|---------|---------------------------|----------------|-------------------|-------------
+| domain  | pagecount                 | \<export seq\> | \<num pages\>     | Count of the number of rank columns in the row
+| rank    | \<uri ref count\>:\<uri\> | \<export seq\> | \<uri ref count\> | Count of how many times a URI in the domain is referenced.  The count is encoded in the qualifier so that the URI with the most references sorts first.
 
 ## Page Row range
 
