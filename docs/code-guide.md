@@ -46,7 +46,10 @@ counts to the Domain Map and URI Exporter.
 ### Page Exporter
 
 For each URI, the Query table contains the URIs that reference it.  This export
-code keeps that information in the Query table up to date.
+code keeps that information in the Query table up to date.  One interesting
+Fluo concept this highlight is the concept of inversion on export.  The
+complete inverted URI index is never built in Fluo, its only built in Query
+table.
 
 **Code:** [PageExport.java][PageExport]
 
@@ -56,6 +59,10 @@ Previous observers calculated the total number of URIs that reference a URI.
 This export code is given the new and old URI reference counts.  URI reference
 counts are indexed three different ways in the Query table.  This export code
 updates all three places in the Query table.
+
+This export code also uses the invert on export concept.  The three indexes are
+never built in the Fluo table.  Fluo only tracks the minimal amount of
+information needed to keep the three indexes current.
 
 **Code:** [UriCountExport.java][UriCountExport]
 
