@@ -40,9 +40,19 @@ Observer.   The second extension point is an update observer the handles
 changes in reference counts for a URI.  It pushes these changes in reference
 counts to the Domain Map and URI Exporter.
 
+Changes to URI reference counts are aggregated per domain and `+1` and `-1`
+updates are queued for the domain map.
+
 **Code:** [UriMap.java][UriMap]
 
 ### Domain Map Observer
+
+This is a Collision Free Map that tracks per domain information. When its
+notified that domain counts changed, it pushes updates to the export queue to
+update the Query table.
+
+**Code:** [DomainMap.java][DomainMap]
+
 ### Page Exporter
 
 For each URI, the Query table contains the URIs that reference it.  This export
@@ -71,6 +81,7 @@ information needed to keep the three indexes current.
 
 [PageObserver]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageObserver.java
 [UriMap]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriMap.java
+[DomainMap]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/DomainMap.java
 [UriCountExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriCountExport.java
 [PageExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageExport.java
 
