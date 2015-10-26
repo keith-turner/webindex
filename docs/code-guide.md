@@ -20,9 +20,9 @@ https://docs.google.com/drawings/d/1vl26uXtScXn1ssj3WEb-qskuH-15OOmWul1B562oWDc/
 ### Page Loader
 ### Page Observer
 
-This observer computes changes to links within a page.  It computes
-links added and deleted and then pushes this information to the URI Map
-Observer and Page Exporter.
+This observer computes changes to links within a page by comparing new and
+current pages.  It computes links added and deleted and then pushes this
+information to the URI Map Observer and Page Exporter.
 
 Conceptually when a page references a new URI, a `+1` is queued up for the Uri
 Map.  When a page no longer references a URI, a `-1` is queued up for the Uri
@@ -32,13 +32,13 @@ Map to process.
 
 ### URI Map Observer
 
-The code for this this observer is very simple because it builds on the
-Collision Free Map Recipe.  A Collision Free Map has two extension points and
-this example implements both.   The first extension point is a
-combiner that processes the `+1` and `-1` updates queued up by the Page
-Observer.   The second extension point is an update observer the handles
-changes in reference counts for a URI.  It pushes these changes in reference
-counts to the Domain Map and URI Exporter.
+This observer computes per URI reference counts.  The code for this this
+observer is very simple because it builds on the Collision Free Map Recipe.  A
+Collision Free Map has two extension points and this example implements both.
+The first extension point is a combiner that processes the `+1` and `-1`
+updates queued up by the Page Observer.   The second extension point is an
+update observer the handles changes in reference counts for a URI.  It pushes
+these changes in reference counts to the Domain Map and URI Exporter.
 
 Changes to URI reference counts are aggregated per domain and `+1` and `-1`
 updates are queued for the domain map.
@@ -47,9 +47,9 @@ updates are queued for the domain map.
 
 ### Domain Map Observer
 
-This is a Collision Free Map that tracks per domain information. When its
-notified that domain counts changed, it pushes updates to the export queue to
-update the Query table.
+This observer computers per domain reference counts.  This is a Collision Free
+Map that tracks per domain information. When its notified that domain counts
+changed, it pushes updates to the export queue to update the Query table.
 
 **Code:** [DomainMap.java][DomainMap]
 
