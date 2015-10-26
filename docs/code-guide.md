@@ -20,7 +20,7 @@ https://docs.google.com/drawings/d/1vl26uXtScXn1ssj3WEb-qskuH-15OOmWul1B562oWDc/
 ### Page Loader
 ### Page Observer
 
-This observer computes the changes to links within a page.  It computes the
+This observer computes changes to links within a page.  It computes
 links added and deleted and then pushes this information to the URI Map
 Observer and Page Exporter.
 
@@ -44,6 +44,12 @@ counts to the Domain Map and URI Exporter.
 
 ### Domain Map Observer
 ### Page Exporter
+
+For each URI, the Query table contains the URIs that reference it.  This export
+code keeps that information in the Query table up to date.
+
+**Code:** [PageExport.java][PageExport]
+
 ### URI Exporter
 
 Previous observers calculated the total number of URIs that reference a URI.
@@ -59,4 +65,5 @@ updates all three places in the Query table.
 [PageObserver]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageObserver.java
 [UriMap]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriMap.java
 [UriCountExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriCountExport.java
+[PageExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageExport.java
 
