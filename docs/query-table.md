@@ -42,13 +42,13 @@ way to achieve this sort order.
 
 ## Example
 
-Sample Data
+Input Data :
 
     a.com/page1 links to c.com, b.com
     b.com links to c.com/page1, c.com
     d.com links to c.com
 
-Resulting Accumulo Table
+Resulting Accumulo Table :
 
     row               cf        cq              value
     --------------------------------------------------
