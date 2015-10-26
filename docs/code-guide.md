@@ -20,16 +20,27 @@ https://docs.google.com/drawings/d/1vl26uXtScXn1ssj3WEb-qskuH-15OOmWul1B562oWDc/
 ### Page Loader
 ### Page Observer
 
-This observer computes the changes to links within a page.  Specifically it computes the links added and deleted and then initiates follow on processing.   
+This observer computes the changes to links within a page.  It computes the
+links added and deleted and then push this information to the URI Map Observer
+and Page Exporter.
 
 **Code:** [PageObserver.java][PageObserver]
 
 ### URI Map Observer
+
+The code this this observer is very simple because it builds on the Collision
+Free Map Recipe.  The observer responds to an update in the number of URIs that
+refererence a URI.  It pushes these changes in reference counts to the Domain
+Map and URI Exporter.
+
+**Code:** [UriMap.java][UriMap]
+
 ### Domain Map Observer
-### Page Export
-### URI Export
-### Domain Export
+### Page Exporter
+### URI Exporter
+### Domain Exporter
 
 
 [PageObserver]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageObserver.java
+[UriMap]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriMap.java
 
