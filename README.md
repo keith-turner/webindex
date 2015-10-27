@@ -4,8 +4,8 @@
 
 An example Fluo applications that indexes links to web pages in multiple ways.
 The example uses CommonCrawl data as input.  See the
-[data](docs/query-table.md) and [code](docs/code-guide.md) for more information
-about how this example works.
+[tables](docs/tables.md) and [code](docs/code-guide.md) documentation for
+more information about how this example works.
 
 ### Requirements
 

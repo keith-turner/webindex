@@ -98,5 +98,5 @@ Export changes to the number of URIs referencing a domain to the Query table.
 [UriCountExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/UriCountExport.java
 [PageExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/PageExport.java
 [DomainExport]: ../modules/data/src/main/java/io/fluo/webindex/data/fluo/DomainExport.java
-[qt]: query-table.md
+[qt]: tables.md
 

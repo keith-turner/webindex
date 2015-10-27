@@ -1,6 +1,20 @@
-# Webindex Query Table Schema
+# Webindex tables
 
-Web pages are the input for the Webindex example and the query table is the output.  The data in the query table is structured so that the web application can efficiently answer the following questions.
+ The example uses two tables in Accumulo.  One table is used by the
+Fluo component of the example.  The second table stores an index used by the
+web application to service queries.
+
+Web pages are the input for the Webindex example and a query table is the
+output.  The Fluo table is an intermediate table needed to incrementally keep
+the query table up to date.
+
+## Fluo table Schema
+
+TODO
+
+## Query Table Schema
+
+The data in the query table is structured so that the web application can efficiently answer the following questions.
 
  * Which web page is referenced by the most web pages?
  * For a given domain, which pages in that domain are referenced by the most web pages?
@@ -12,7 +26,7 @@ To answer these questions the query table has three top level row ranges :
  * A row range with prexix `p:` that contains information about individual pages.
  * A row range with prefix `t:` that sorts all URIs by reference count.
 
-## Domain Row Range
+### Domain Row Range
 
 In the domain section of the table all rows are of the form `d:<domain>`.  The
 following table shows the possible columns for domain rows.
@@ -22,7 +36,7 @@ following table shows the possible columns for domain rows.
 | domain  | pagecount                 | \<export-seq\> | \<num-pages\>     | Count of the number of rank columns in the row
 | rank    | \<uri-ref-count\>:\<uri\> | \<export-seq\> | \<uri-ref-count\> | Count of how many times a URI in the domain is referenced.  The count is encoded in the qualifier so that the URI with the most references sorts first.
 
-## Page Row range
+### Page Row range
 
 In the page section of the table all rows are of the form `p:<uri>`.  The
 following table shows the possible columns for page rows.
@@ -33,14 +47,14 @@ following table shows the possible columns for page rows.
 | page    | incount           | \<export-seq\> | \<uri-ref-count\>       | A count of the number of pages that reference this URI.  This is also the numnber of inlinks column families in this row.
 | inlinks | \<uri\>           | \<export-seq\> | \<anchor-text\>         | A URI that references this URI/page.  The value contains the anchor text from the referencing link.
 
-## Total row range
+### Total row range
 
 All rows in this range are of the form `t:<uri-ref-count>:<uri>` and there are
 no columns.  This row range contains all URIs sorted from most referenced to
 least referenced.  The URI reference count in the row is encoded in a special
 way to achieve this sort order.
 
-## Example
+### Example
 
 Input Data :
 
