@@ -1,5 +1,6 @@
 package io.fluo.webindex.serialization;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import com.esotericsoftware.kryo.Kryo;
@@ -10,7 +11,9 @@ import io.fluo.webindex.data.fluo.PageExport;
 import io.fluo.webindex.data.fluo.UriCountExport;
 import io.fluo.webindex.data.fluo.UriMap.UriInfo;
 
-public class WebindexKryoFactory implements KryoFactory{
+public class WebindexKryoFactory implements KryoFactory, Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   @Override
   public Kryo create() {
