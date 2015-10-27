@@ -12,7 +12,8 @@ want to read about the [Query Table][qt] before reading about the code.
 
 ## Guide to Fluo Component.
 
-The following image shows a high level view of how data flows through the Fluo Webindex code.   
+The following image shows a high level view of how data flows through the Fluo
+Webindex code.   
 
 <center>![Observer Map](webindex_graphic.png)</center>
 <!--
