@@ -1,11 +1,11 @@
 /*
  * Copyright 2015 Fluo authors (see AUTHORS)
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -28,7 +28,6 @@ import io.fluo.api.data.RowColumn;
 import io.fluo.api.data.RowColumnValue;
 import io.fluo.recipes.map.CollisionFreeMap;
 import io.fluo.recipes.map.CollisionFreeMap.Initializer;
-import io.fluo.recipes.serialization.KryoSimplerSerializer;
 import io.fluo.recipes.serialization.SimpleSerializer;
 import io.fluo.webindex.core.Constants;
 import io.fluo.webindex.core.DataUtil;
@@ -39,7 +38,6 @@ import io.fluo.webindex.data.fluo.UriMap.UriInfo;
 import io.fluo.webindex.data.util.ArchiveUtil;
 import io.fluo.webindex.data.util.FluoConstants;
 import io.fluo.webindex.data.util.LinkUtil;
-import io.fluo.webindex.serialization.WebindexKryoFactory;
 import org.apache.accumulo.core.client.lexicoder.Lexicoder;
 import org.apache.accumulo.core.client.lexicoder.ReverseLexicoder;
 import org.apache.accumulo.core.client.lexicoder.ULongLexicoder;
@@ -170,27 +168,28 @@ public class IndexUtil {
    * Creates a Fluo index by filtering out unnecessary data from Accumulo Index
    */
   public static JavaPairRDD<RowColumn, Bytes> createFluoIndex(
-      JavaPairRDD<RowColumn, Bytes> accumuloIndex) {
+      JavaPairRDD<RowColumn, Bytes> accumuloIndex, SimpleSerializer serializer, int numUriMapBuckets) {
     JavaPairRDD<RowColumn, Bytes> fluoIndex =
         accumuloIndex.filter(t -> !t._1().getColumn().getFamily().toString().equals(Constants.RANK)
             && !t._1().getRow().toString().startsWith("t:"));
 
 
-    JavaPairRDD<RowColumn, Bytes> pagesFiltered = accumuloIndex.filter(t -> {
-      RowColumn rc = t._1();
-      String row = rc.getRow().toString();
-      String cf = rc.getColumn().getFamily().toString();
-      String cq = rc.getColumn().getQualifier().toString();
+    JavaPairRDD<RowColumn, Bytes> pagesFiltered =
+        accumuloIndex.filter(t -> {
+          RowColumn rc = t._1();
+          String row = rc.getRow().toString();
+          String cf = rc.getColumn().getFamily().toString();
+          String cq = rc.getColumn().getQualifier().toString();
 
-      return row.startsWith("p:") && cf.equals(Constants.PAGE) && (cq.equals(Constants.INCOUNT) || cq.equals(Constants.CUR));
-    });
+          return row.startsWith("p:") && cf.equals(Constants.PAGE)
+              && (cq.equals(Constants.INCOUNT) || cq.equals(Constants.CUR));
+        });
 
-    JavaPairRDD<Bytes, Iterable<Tuple2<RowColumn, Bytes>>> pageRows = pagesFiltered.groupBy(t -> t._1().getRow());
+    JavaPairRDD<Bytes, Iterable<Tuple2<RowColumn, Bytes>>> pageRows =
+        pagesFiltered.groupBy(t -> t._1().getRow());
 
-    SimpleSerializer serializer = new KryoSimplerSerializer(new WebindexKryoFactory());
-
-    //TODO need to configure # of buckets
-    Initializer<String, UriInfo> uriMapInitializer = CollisionFreeMap.getInitializer(UriMap.URI_MAP_ID, 5, serializer);
+    Initializer<String, UriInfo> uriMapInitializer =
+        CollisionFreeMap.getInitializer(UriMap.URI_MAP_ID, numUriMapBuckets, serializer);
 
     JavaPairRDD<RowColumn, Bytes> uriMap = pageRows.mapToPair(t -> {
       int docs = 0;
@@ -208,29 +207,31 @@ public class IndexUtil {
 
       String uri = t._1().toString().substring(2);
 
-      RowColumnValue rcv =  uriMapInitializer.convert(uri, new UriInfo(links, docs));
+      RowColumnValue rcv = uriMapInitializer.convert(uri, new UriInfo(links, docs));
 
       return new Tuple2<RowColumn, Bytes>(rcv, rcv.getValue());
     });
 
-    //TODO need to configure # of buckets
-    Initializer<String, Long> domainMapInitializer = CollisionFreeMap.getInitializer(DomainMap.DOMAIN_MAP_ID, 5, serializer);
+    // TODO need to configure # of buckets
+    Initializer<String, Long> domainMapInitializer =
+        CollisionFreeMap.getInitializer(DomainMap.DOMAIN_MAP_ID, 5, serializer);
 
-    //generate the rest of the fluo table
+    // generate the rest of the fluo table
     fluoIndex = accumuloIndex.flatMapToPair(t -> {
       RowColumn rc = t._1();
       String row = rc.getRow().toString();
       String cf = rc.getColumn().getFamily().toString();
       String cq = rc.getColumn().getQualifier().toString();
 
-      if (row.startsWith("d:") && cf.equals(Constants.DOMAIN) && cq.equals(Constants.PAGES)) {
+      if (row.startsWith("d:") && cf.equals(Constants.DOMAIN) && cq.equals(Constants.PAGECOUNT)) {
         String domain = row.substring(2);
         Long count = Long.valueOf(t._2().toString());
 
         RowColumnValue rcv = domainMapInitializer.convert(domain, count);
 
         return Collections.singleton(new Tuple2<RowColumn, Bytes>(rcv, rcv.getValue()));
-      } if (row.startsWith("p:") && cf.equals(Constants.PAGE) && cq.equals(Constants.CUR)) {
+      }
+      if (row.startsWith("p:") && cf.equals(Constants.PAGE) && cq.equals(Constants.CUR)) {
         return Collections.singleton(t);
       }
 

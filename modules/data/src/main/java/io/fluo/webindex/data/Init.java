@@ -1,11 +1,11 @@
 /*
  * Copyright 2015 Fluo authors (see AUTHORS)
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -22,12 +22,14 @@ import io.fluo.api.data.Column;
 import io.fluo.api.data.RowColumn;
 import io.fluo.mapreduce.FluoKeyValue;
 import io.fluo.mapreduce.FluoKeyValueGenerator;
+import io.fluo.recipes.serialization.KryoSimplerSerializer;
 import io.fluo.webindex.core.DataConfig;
 import io.fluo.webindex.core.models.Page;
 import io.fluo.webindex.data.spark.IndexEnv;
 import io.fluo.webindex.data.spark.IndexStats;
 import io.fluo.webindex.data.spark.IndexUtil;
 import io.fluo.webindex.data.util.WARCFileInputFormat;
+import io.fluo.webindex.serialization.WebindexKryoFactory;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.conf.Configuration;
@@ -52,9 +54,9 @@ public class Init {
       String cf = rc.getColumn().getFamily().toString();
       String cq = rc.getColumn().getQualifier().toString();
       byte[] val = tuple._2().toArray();
-      //TODO probably need to set timestamp
-      return new Tuple2<>(new Key(new Text(row), new Text(cf), new Text(cq)), new Value(val));
-    });
+      // TODO probably need to set timestamp
+        return new Tuple2<>(new Key(new Text(row), new Text(cf), new Text(cq)), new Value(val));
+      });
     env.saveKeyValueToAccumulo(accumuloData);
   }
 
@@ -101,7 +103,9 @@ public class Init {
     JavaPairRDD<RowColumn, Bytes> accumuloIndex = IndexUtil.createAccumuloIndex(stats, pages);
 
     // Create a Fluo index by filtering a subset of data from Accumulo index
-    JavaPairRDD<RowColumn, Bytes> fluoIndex = IndexUtil.createFluoIndex(accumuloIndex);
+    KryoSimplerSerializer serializer = new KryoSimplerSerializer(new WebindexKryoFactory());
+    JavaPairRDD<RowColumn, Bytes> fluoIndex =
+        IndexUtil.createFluoIndex(accumuloIndex, serializer, FluoApp.NUM_BUCKETS);
 
     // Initialize Accumulo index table with default splits or splits calculated from data
     if (dataConfig.calculateAccumuloSplits) {

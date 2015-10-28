@@ -40,7 +40,7 @@ import io.fluo.api.mini.MiniFluo;
 import io.fluo.recipes.accumulo.export.TableInfo;
 import io.fluo.webindex.core.Constants;
 import io.fluo.webindex.core.models.Page;
-import io.fluo.webindex.data.PrintProps;
+import io.fluo.webindex.data.FluoApp;
 import io.fluo.webindex.data.spark.IndexStats;
 import io.fluo.webindex.data.spark.IndexUtil;
 import io.fluo.webindex.data.util.ArchiveUtil;
@@ -127,7 +127,7 @@ public class IndexIT {
 
     config.addObserver(new ObserverConfiguration(PageObserver.class.getName()));
 
-    PrintProps.configureApplication(config,
+    FluoApp.configureApplication(config,
         new TableInfo(cluster.getInstanceName(), cluster.getZooKeepers(), "root", "secret",
             exportTable), 5);
 
@@ -202,6 +202,7 @@ public class IndexIT {
           le.execute(PageLoader.updatePage(page));
         }
       }
+
       miniFluo.waitForObservers();
 
       String deleteUrl = "http://1000games.me/games/gametion/";
@@ -243,6 +244,24 @@ public class IndexIT {
     System.out.println("== RDD end ==");
   }
 
+  private String top(Bytes bytes) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < bytes.length(); i++) {
+      byte b = bytes.byteAt(i);
+      if (b >= 32 && b <= 126) {
+        sb.append((char) b);
+      } else {
+        sb.append(String.format("\\x%02x", b & 0xff));
+      }
+    }
+
+    return sb.toString();
+  }
+
+  private String top(Column c) {
+    return top(c.getFamily()) + " " + top(c.getQualifier()) + " " + top(c.getVisibility());
+  }
+
   private void printFluoTable(FluoClient client) throws Exception {
     try (Snapshot s = client.newSnapshot()) {
       RowIterator iter = s.get(new ScannerConfiguration());
@@ -253,8 +272,8 @@ public class IndexIT {
         ColumnIterator citer = rowEntry.getValue();
         while (citer.hasNext()) {
           Map.Entry<Column, Bytes> colEntry = citer.next();
-          System.out.println(rowEntry.getKey() + " " + colEntry.getKey() + "\t"
-              + colEntry.getValue());
+          System.out.println(top(rowEntry.getKey()) + " " + top(colEntry.getKey()) + "\t"
+              + top(colEntry.getValue()));
         }
       }
       System.out.println("=== fluo end ===");

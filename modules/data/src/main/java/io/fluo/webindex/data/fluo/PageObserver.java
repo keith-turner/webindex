@@ -14,7 +14,6 @@
 
 package io.fluo.webindex.data.fluo;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -54,38 +53,29 @@ public class PageObserver extends AbstractObserver {
   public void process(TransactionBase tx, Bytes row, Column col) throws Exception {
 
     TypedTransactionBase ttx = FluoConstants.TYPEL.wrap(tx);
+
     String nextJson = ttx.get().row(row).col(FluoConstants.PAGE_NEW_COL).toString("");
     if (nextJson.isEmpty()) {
       log.error("An empty page was set at row {} col {}", row.toString(), col.toString());
       return;
     }
 
-    String curJson = ttx.get().row(row).col(FluoConstants.PAGE_CUR_COL).toString("");
-    Set<Page.Link> curLinks = Collections.emptySet();
-    if (!curJson.isEmpty()) {
-      Page curPage = gson.fromJson(curJson, Page.class);
-      curLinks = curPage.getOutboundLinks();
-    }
+    Page curPage = Page.fromJson(gson, ttx.get().row(row).col(FluoConstants.PAGE_CUR_COL).toString(""));
+    Set<Page.Link> curLinks = curPage.getOutboundLinks();
 
     Map<String, UriInfo> updates = new HashMap<>();
     String pageUri = row.toString().substring(2);
 
-    if (curJson.isEmpty() && !nextJson.equals("delete")) {
-      updates.put(pageUri, new UriInfo(0, 1));
-    }
-
-    Page nextPage;
-    if (nextJson.equals("delete")) {
+    Page nextPage = Page.fromJson(gson, nextJson);
+    if (nextPage.isDelete()) {
       ttx.mutate().row(row).col(FluoConstants.PAGE_CUR_COL).delete();
-      // updateDomainPageCount(ttx, row, -1);
       updates.put(pageUri, new UriInfo(0, -1));
-      nextPage = Page.EMPTY;
     } else {
       ttx.mutate().row(row).col(FluoConstants.PAGE_CUR_COL).set(nextJson);
-      nextPage = gson.fromJson(nextJson, Page.class);
+      if(curPage.isEmpty()) {
+        updates.put(pageUri, new UriInfo(0, 1));
+      }
     }
-
-    //TODO shorten above code
 
     Set<Page.Link> nextLinks = nextPage.getOutboundLinks();
 

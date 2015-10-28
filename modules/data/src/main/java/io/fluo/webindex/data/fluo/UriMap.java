@@ -43,10 +43,10 @@ public class UriMap {
 
   public static class UriInfo {
     // the numbers of documents that link to this URI
-    long linksTo;
+    public long linksTo;
 
     // the number of documents with this URI. Should be 0 or 1
-    int docs;
+    public int docs;
 
     public UriInfo() {}
 
@@ -120,6 +120,8 @@ public class UriMap {
 
         UriInfo oldVal = update.getOldValue().or(new UriInfo(0, 0));
         UriInfo newVal = update.getNewValue().or(new UriInfo(0, 0));
+
+        System.out.println(update.getKey() + " [" + oldVal + "] [" + newVal + "]");
 
         exportQ.add(tx, update.getKey(), new UriCountExport(oldVal, newVal));
 
