@@ -1,11 +1,11 @@
 /*
  * Copyright 2015 Fluo authors (see AUTHORS)
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -41,6 +41,7 @@ import io.fluo.recipes.accumulo.export.TableInfo;
 import io.fluo.webindex.core.Constants;
 import io.fluo.webindex.core.models.Page;
 import io.fluo.webindex.data.FluoApp;
+import io.fluo.webindex.data.spark.Hex;
 import io.fluo.webindex.data.spark.IndexStats;
 import io.fluo.webindex.data.spark.IndexUtil;
 import io.fluo.webindex.data.util.ArchiveUtil;
@@ -166,16 +167,18 @@ public class IndexIT {
     // Create expected output using spark
     IndexStats stats = new IndexStats(sc);
     JavaPairRDD<RowColumn, Bytes> accumuloIndex = IndexUtil.createAccumuloIndex(stats, pagesRDD);
-    // JavaPairRDD<RowColumn, Bytes> fluoIndex = IndexUtil.createFluoIndex(accumuloIndex);
+    JavaPairRDD<RowColumn, Bytes> fluoIndex =
+        IndexUtil.createFluoIndex(accumuloIndex, 5).sortByKey();
 
     // Compare against actual
     boolean foundDiff = false;
     foundDiff |= diffAccumuloTable(accumuloIndex.collect());
-    // foundDiff |= diffFluoTable(client, fluoIndex.collect());
+    foundDiff |= diffFluoTable(client, fluoIndex.collect());
     if (foundDiff) {
-      // printFluoTable(client);
+      printFluoTable(client);
       printAccumuloTable();
       printRDD(accumuloIndex.collect());
+      printRDD(fluoIndex.collect());
     }
     Assert.assertFalse(foundDiff);
   }
@@ -232,34 +235,13 @@ public class IndexIT {
 
       Assert.assertNotNull(pages.put(updateUrl, updatePage));
       assertOutput(pages.values(), client);
-
-      printFluoTable(client);
     }
   }
 
   private void printRDD(List<Tuple2<RowColumn, Bytes>> rcvRDD) {
     System.out.println("== RDD start ==");
-    rcvRDD
-        .forEach(t -> System.out.println("rc " + t._1().toString() + " val " + t._2().toString()));
+    rcvRDD.forEach(t -> System.out.println("rc " + Hex.encNonAscii(t, " ")));
     System.out.println("== RDD end ==");
-  }
-
-  private String top(Bytes bytes) {
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < bytes.length(); i++) {
-      byte b = bytes.byteAt(i);
-      if (b >= 32 && b <= 126) {
-        sb.append((char) b);
-      } else {
-        sb.append(String.format("\\x%02x", b & 0xff));
-      }
-    }
-
-    return sb.toString();
-  }
-
-  private String top(Column c) {
-    return top(c.getFamily()) + " " + top(c.getQualifier()) + " " + top(c.getVisibility());
   }
 
   private void printFluoTable(FluoClient client) throws Exception {
@@ -272,8 +254,15 @@ public class IndexIT {
         ColumnIterator citer = rowEntry.getValue();
         while (citer.hasNext()) {
           Map.Entry<Column, Bytes> colEntry = citer.next();
-          System.out.println(top(rowEntry.getKey()) + " " + top(colEntry.getKey()) + "\t"
-              + top(colEntry.getValue()));
+
+          StringBuilder sb = new StringBuilder();
+          Hex.encNonAscii(sb, rowEntry.getKey());
+          sb.append(" ");
+          Hex.encNonAscii(sb, colEntry.getKey(), " ");
+          sb.append("\t");
+          Hex.encNonAscii(sb, colEntry.getValue());
+
+          System.out.println(sb.toString());
         }
       }
       System.out.println("=== fluo end ===");
@@ -296,20 +285,18 @@ public class IndexIT {
           RowColumn rc = indexEntry._1();
           Column col = colEntry.getKey();
 
-          retval |= diff("row", rc.getRow().toString(), rowEntry.getKey().toString());
-          retval |= diff("fam", rc.getColumn().getFamily().toString(), col.getFamily().toString());
-          retval |=
-              diff("qual", rc.getColumn().getQualifier().toString(), col.getQualifier().toString());
+          retval |= diff("fluo row", rc.getRow(), rowEntry.getKey());
+          retval |= diff("fluo fam", rc.getColumn().getFamily(), col.getFamily());
+          retval |= diff("fluo qual", rc.getColumn().getQualifier(), col.getQualifier());
           if (!col.getQualifier().toString().equals(Constants.CUR)) {
-            retval |= diff("val", indexEntry._2().toString(), colEntry.getValue().toString());
+            retval |= diff("fluo val", indexEntry._2(), colEntry.getValue());
           }
 
           if (retval) {
             return true;
           }
-          log.debug("Verified row {} cf {} cq {} val {}", rc.getRow().toString(), rc.getColumn()
-              .getFamily().toString(), rc.getColumn().getQualifier().toString(), indexEntry._2()
-              .toString());
+
+          log.debug("Verified {}", Hex.encNonAscii(indexEntry, " "));
         }
         if (citer.hasNext()) {
           log.error("An column iterator still has more data");
@@ -341,6 +328,15 @@ public class IndexIT {
   private boolean diff(String dataType, String expected, String actual) {
     if (!expected.equals(actual)) {
       log.error("Difference found in {} - expected {} actual {}", dataType, expected, actual);
+      return true;
+    }
+    return false;
+  }
+
+  private boolean diff(String dataType, Bytes expected, Bytes actual) {
+    if (!expected.equals(actual)) {
+      log.error("Difference found in {} - expected {} actual {}", dataType,
+          Hex.encNonAscii(expected), Hex.encNonAscii(actual));
       return true;
     }
     return false;

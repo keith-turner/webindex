@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import io.fluo.api.data.Bytes;
-import io.fluo.api.data.Column;
 import io.fluo.api.data.RowColumn;
 import io.fluo.webindex.core.models.Page;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -60,8 +59,7 @@ public class IndexUtilTest {
     verifyRDD("data/set1/accumulo-data.txt", accumuloIndex);
 
     // Use Accumulo index to create Fluo index and verify
-    JavaPairRDD<RowColumn, Bytes> fluoIndex =
-        IndexUtil.createFluoIndex(accumuloIndex, new TestSerializer(), 5);
+    JavaPairRDD<RowColumn, Bytes> fluoIndex = IndexUtil.createFluoIndex(accumuloIndex, 5);
     verifyRDD("data/set1/fluo-data.txt", fluoIndex);
 
     // Use Fluo index to create Accumulo index and verify
@@ -70,16 +68,8 @@ public class IndexUtilTest {
     // verifyRDD("data/set1/accumulo-data.txt", accumuloIndexRecreated);
   }
 
-  public String rcvToString(RowColumn rc, Bytes v) {
-    Column col = rc.getColumn();
-    return String.format("%s|%s|%s|%s", rc.getRow().toString(), col.getFamily().toString(), col
-        .getQualifier().toString(), v.toString());
-  }
-
   public void dump(JavaPairRDD<RowColumn, Bytes> rcb) {
-    for (Tuple2<RowColumn, Bytes> tuple : rcb.collect()) {
-      System.out.println(rcvToString(tuple._1(), tuple._2()));
-    }
+    rcb.foreach(t -> System.out.println(Hex.encNonAscii(t, "|")));
   }
 
   public void verifyRDD(String expectedFilename, JavaPairRDD<RowColumn, Bytes> actual)
@@ -102,7 +92,7 @@ public class IndexUtilTest {
     while (actualIter.hasNext() && expectedIter.hasNext()) {
       String exp = expectedIter.next();
       Tuple2<RowColumn, Bytes> act = actualIter.next();
-      Assert.assertEquals(exp, rcvToString(act._1(), act._2()));
+      Assert.assertEquals(exp, Hex.encNonAscii(act, "|"));
     }
   }
 

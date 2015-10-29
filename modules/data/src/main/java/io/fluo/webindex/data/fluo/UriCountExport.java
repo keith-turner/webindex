@@ -27,8 +27,8 @@ import io.fluo.webindex.data.util.LinkUtil;
 import org.apache.accumulo.core.data.Mutation;
 
 public class UriCountExport implements Transmutable<String> {
-  public UriInfo prevCount = new UriInfo(0, 0);
-  public UriInfo newCount = new UriInfo(0, 0);
+  public UriInfo prevCount = UriInfo.EMPTY;
+  public UriInfo newCount = UriInfo.EMPTY;
 
   public UriCountExport() {}
 
@@ -68,7 +68,7 @@ public class UriCountExport implements Transmutable<String> {
     }
 
     String cf = String.format("%s:%s", IndexUtil.revEncodeLong(curr.linksTo), uri);
-    if (curr.equals(new UriInfo(0, 0))) {
+    if (curr.equals(UriInfo.EMPTY)) {
       m.putDelete(Constants.RANK, cf, seq);
     } else {
       m.put(Constants.RANK, cf, seq, "" + curr.linksTo);
@@ -78,7 +78,7 @@ public class UriCountExport implements Transmutable<String> {
 
   private static Mutation createPageUpdate(String uri, long seq, UriInfo curr) {
     Mutation m = new Mutation("p:" + uri);
-    if (curr.equals(new UriInfo(0, 0))) {
+    if (curr.equals(UriInfo.EMPTY)) {
       m.putDelete(Constants.PAGE, Constants.INCOUNT, seq);
     } else {
       m.put(Constants.PAGE, Constants.INCOUNT, seq, "" + curr.linksTo);
@@ -103,7 +103,7 @@ public class UriCountExport implements Transmutable<String> {
     }
 
     m = new Mutation(createTotalRow(uri, curr.linksTo));
-    if (curr.equals(new UriInfo(0, 0))) {
+    if (curr.equals(UriInfo.EMPTY)) {
       m.putDelete("", "", seq);
     } else {
       m.put("", "", seq, "" + curr.linksTo);

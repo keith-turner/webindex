@@ -22,14 +22,12 @@ import io.fluo.api.data.Column;
 import io.fluo.api.data.RowColumn;
 import io.fluo.mapreduce.FluoKeyValue;
 import io.fluo.mapreduce.FluoKeyValueGenerator;
-import io.fluo.recipes.serialization.KryoSimplerSerializer;
 import io.fluo.webindex.core.DataConfig;
 import io.fluo.webindex.core.models.Page;
 import io.fluo.webindex.data.spark.IndexEnv;
 import io.fluo.webindex.data.spark.IndexStats;
 import io.fluo.webindex.data.spark.IndexUtil;
 import io.fluo.webindex.data.util.WARCFileInputFormat;
-import io.fluo.webindex.serialization.WebindexKryoFactory;
 import org.apache.accumulo.core.data.Key;
 import org.apache.accumulo.core.data.Value;
 import org.apache.hadoop.conf.Configuration;
@@ -103,9 +101,8 @@ public class Init {
     JavaPairRDD<RowColumn, Bytes> accumuloIndex = IndexUtil.createAccumuloIndex(stats, pages);
 
     // Create a Fluo index by filtering a subset of data from Accumulo index
-    KryoSimplerSerializer serializer = new KryoSimplerSerializer(new WebindexKryoFactory());
     JavaPairRDD<RowColumn, Bytes> fluoIndex =
-        IndexUtil.createFluoIndex(accumuloIndex, serializer, FluoApp.NUM_BUCKETS);
+        IndexUtil.createFluoIndex(accumuloIndex, FluoApp.NUM_BUCKETS);
 
     // Initialize Accumulo index table with default splits or splits calculated from data
     if (dataConfig.calculateAccumuloSplits) {

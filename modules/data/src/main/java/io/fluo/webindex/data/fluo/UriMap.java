@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
 import io.fluo.api.client.TransactionBase;
 import io.fluo.api.config.FluoConfiguration;
 import io.fluo.api.observer.Observer.Context;
@@ -42,6 +43,9 @@ public class UriMap {
   public static String URI_MAP_ID = "um";
 
   public static class UriInfo {
+
+    public static final UriInfo EMPTY = new UriInfo(0, 0);
+
     // the numbers of documents that link to this URI
     public long linksTo;
 
@@ -56,6 +60,7 @@ public class UriMap {
     }
 
     public void add(UriInfo other) {
+      Preconditions.checkArgument(this != EMPTY);
       this.linksTo += other.linksTo;
       this.docs += other.docs;
     }
@@ -81,7 +86,8 @@ public class UriMap {
    */
   public static class UriCombiner implements Combiner<String, UriInfo, UriInfo> {
     @Override
-    public UriInfo combine(String key, Optional<UriInfo> currentValue, Iterator<UriInfo> updates) {
+    public Optional<UriInfo> combine(String key, Optional<UriInfo> currentValue,
+        Iterator<UriInfo> updates) {
 
       UriInfo total = currentValue.or(new UriInfo(0, 0));
 
@@ -89,8 +95,11 @@ public class UriMap {
         total.add(updates.next());
       }
 
-      // TODO when both 0, return null
-      return total;
+      if (total.equals(new UriInfo(0, 0))) {
+        return Optional.absent();
+      } else {
+        return Optional.of(total);
+      }
     }
   }
 
@@ -118,10 +127,8 @@ public class UriMap {
       while (updates.hasNext()) {
         Update<String, UriInfo> update = updates.next();
 
-        UriInfo oldVal = update.getOldValue().or(new UriInfo(0, 0));
-        UriInfo newVal = update.getNewValue().or(new UriInfo(0, 0));
-
-        System.out.println(update.getKey() + " [" + oldVal + "] [" + newVal + "]");
+        UriInfo oldVal = update.getOldValue().or(UriInfo.EMPTY);
+        UriInfo newVal = update.getNewValue().or(UriInfo.EMPTY);
 
         exportQ.add(tx, update.getKey(), new UriCountExport(oldVal, newVal));
 

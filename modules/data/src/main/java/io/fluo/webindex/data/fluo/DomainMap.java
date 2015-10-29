@@ -36,14 +36,18 @@ public class DomainMap {
    */
   public static class DomainCombiner implements Combiner<String, Long, Long> {
     @Override
-    public Long combine(String key, Optional<Long> currentValue, Iterator<Long> updates) {
+    public Optional<Long> combine(String key, Optional<Long> currentValue, Iterator<Long> updates) {
       long l = currentValue.or(0L);
 
       while (updates.hasNext()) {
         l += updates.next();
       }
 
-      return l;
+      if (l == 0) {
+        return Optional.absent();
+      } else {
+        return Optional.of(l);
+      }
     }
   }
 

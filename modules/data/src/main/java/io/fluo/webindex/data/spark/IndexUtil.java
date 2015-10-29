@@ -28,7 +28,7 @@ import io.fluo.api.data.RowColumn;
 import io.fluo.api.data.RowColumnValue;
 import io.fluo.recipes.map.CollisionFreeMap;
 import io.fluo.recipes.map.CollisionFreeMap.Initializer;
-import io.fluo.recipes.serialization.SimpleSerializer;
+import io.fluo.recipes.serialization.KryoSimplerSerializer;
 import io.fluo.webindex.core.Constants;
 import io.fluo.webindex.core.DataUtil;
 import io.fluo.webindex.core.models.Page;
@@ -38,6 +38,7 @@ import io.fluo.webindex.data.fluo.UriMap.UriInfo;
 import io.fluo.webindex.data.util.ArchiveUtil;
 import io.fluo.webindex.data.util.FluoConstants;
 import io.fluo.webindex.data.util.LinkUtil;
+import io.fluo.webindex.serialization.WebindexKryoFactory;
 import org.apache.accumulo.core.client.lexicoder.Lexicoder;
 import org.apache.accumulo.core.client.lexicoder.ReverseLexicoder;
 import org.apache.accumulo.core.client.lexicoder.ULongLexicoder;
@@ -168,7 +169,10 @@ public class IndexUtil {
    * Creates a Fluo index by filtering out unnecessary data from Accumulo Index
    */
   public static JavaPairRDD<RowColumn, Bytes> createFluoIndex(
-      JavaPairRDD<RowColumn, Bytes> accumuloIndex, SimpleSerializer serializer, int numUriMapBuckets) {
+      JavaPairRDD<RowColumn, Bytes> accumuloIndex, int numUriMapBuckets) {
+
+    KryoSimplerSerializer serializer = new KryoSimplerSerializer(new WebindexKryoFactory());
+
     JavaPairRDD<RowColumn, Bytes> fluoIndex =
         accumuloIndex.filter(t -> !t._1().getColumn().getFamily().toString().equals(Constants.RANK)
             && !t._1().getRow().toString().startsWith("t:"));
