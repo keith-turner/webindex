@@ -195,52 +195,58 @@ public class IndexUtil {
     Initializer<String, UriInfo> uriMapInitializer =
         CollisionFreeMap.getInitializer(UriMap.URI_MAP_ID, numUriMapBuckets, serializer);
 
-    JavaPairRDD<RowColumn, Bytes> uriMap = pageRows.mapToPair(t -> {
-      int docs = 0;
-      long links = 0;
+    JavaPairRDD<RowColumn, Bytes> uriMap =
+        pageRows.mapToPair(t -> {
+          int docs = 0;
+          long links = 0;
 
-      for (Tuple2<RowColumn, Bytes> rcv : t._2()) {
-        String cq = rcv._1().getColumn().getQualifier().toString();
+          for (Tuple2<RowColumn, Bytes> rcv : t._2()) {
+            String cq = rcv._1().getColumn().getQualifier().toString();
 
-        if (cq.equals(Constants.CUR)) {
-          docs = 1;
-        } else if (cq.equals(Constants.INCOUNT)) {
-          links = Long.parseLong(rcv._2().toString());
-        }
-      }
+            if (cq.equals(Constants.CUR)) {
+              docs = 1;
+            } else if (cq.equals(Constants.INCOUNT)) {
+              links = Long.parseLong(rcv._2().toString());
+            }
+          }
 
-      String uri = t._1().toString().substring(2);
+          String uri = t._1().toString().substring(2);
 
-      RowColumnValue rcv = uriMapInitializer.convert(uri, new UriInfo(links, docs));
+          RowColumnValue rcv = uriMapInitializer.convert(uri, new UriInfo(links, docs));
 
-      return new Tuple2<RowColumn, Bytes>(rcv, rcv.getValue());
-    });
+          return new Tuple2<RowColumn, Bytes>(new RowColumn(rcv.getRow(), rcv.getColumn()), rcv
+              .getValue());
+        });
 
     // TODO need to configure # of buckets
     Initializer<String, Long> domainMapInitializer =
         CollisionFreeMap.getInitializer(DomainMap.DOMAIN_MAP_ID, 5, serializer);
 
     // generate the rest of the fluo table
-    fluoIndex = accumuloIndex.flatMapToPair(t -> {
-      RowColumn rc = t._1();
-      String row = rc.getRow().toString();
-      String cf = rc.getColumn().getFamily().toString();
-      String cq = rc.getColumn().getQualifier().toString();
+    fluoIndex =
+        accumuloIndex.flatMapToPair(
+            t -> {
+              RowColumn rc = t._1();
+              String row = rc.getRow().toString();
+              String cf = rc.getColumn().getFamily().toString();
+              String cq = rc.getColumn().getQualifier().toString();
 
-      if (row.startsWith("d:") && cf.equals(Constants.DOMAIN) && cq.equals(Constants.PAGECOUNT)) {
-        String domain = row.substring(2);
-        Long count = Long.valueOf(t._2().toString());
+              if (row.startsWith("d:") && cf.equals(Constants.DOMAIN)
+                  && cq.equals(Constants.PAGECOUNT)) {
+                String domain = row.substring(2);
+                Long count = Long.valueOf(t._2().toString());
 
-        RowColumnValue rcv = domainMapInitializer.convert(domain, count);
+                RowColumnValue rcv = domainMapInitializer.convert(domain, count);
 
-        return Collections.singleton(new Tuple2<RowColumn, Bytes>(rcv, rcv.getValue()));
-      }
-      if (row.startsWith("p:") && cf.equals(Constants.PAGE) && cq.equals(Constants.CUR)) {
-        return Collections.singleton(t);
-      }
+                return Collections.singleton(new Tuple2<RowColumn, Bytes>(new RowColumn(rcv
+                    .getRow(), rcv.getColumn()), rcv.getValue()));
+              }
+              if (row.startsWith("p:") && cf.equals(Constants.PAGE) && cq.equals(Constants.CUR)) {
+                return Collections.singleton(t);
+              }
 
-      return Collections.emptyList();
-    }).union(uriMap);
+              return Collections.emptyList();
+            }).union(uriMap);
 
 
 
@@ -281,11 +287,11 @@ public class IndexUtil {
 
     SortedSet<Text> splits = new TreeSet<>();
     for (Tuple2<RowColumn, Bytes> tuple : sample) {
-      String row = tuple._1().getRow().toString();
+      Bytes row = tuple._1().getRow();
       if (row.length() < 29) {
-        splits.add(new Text(row));
+        splits.add(new Text(row.toArray()));
       } else {
-        splits.add(new Text(row.substring(0, 29)));
+        splits.add(new Text(row.subSequence(0, 29).toArray()));
       }
     }
     return splits;
