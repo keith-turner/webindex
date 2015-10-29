@@ -108,7 +108,13 @@ public class Init {
     if (dataConfig.calculateAccumuloSplits) {
       env.initAccumuloIndexTable(IndexUtil.calculateSplits(accumuloIndex, 100));
     } else {
-      env.initAccumuloIndexTable(IndexEnv.getDefaultSplits());
+      env.initAccumuloIndexTable(IndexEnv.getAccumuloDefaultSplits());
+    }
+
+    if (dataConfig.calculateAccumuloSplits) {
+      env.setFluoTableSplits(IndexUtil.calculateSplits(fluoIndex, 100));
+    } else {
+      env.setFluoTableSplits(IndexEnv.getFluoDefaultSplits());
     }
 
     // Load the indexes into Fluo and Accumulo
